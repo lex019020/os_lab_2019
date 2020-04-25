@@ -40,18 +40,12 @@ int main(int argc, char **argv) {
         switch (option_index) {
           case 0:
             seed = atoi(optarg);
-            // your code here
-            // error handling
             break;
           case 1:
             array_size = atoi(optarg);
-            // your code here
-            // error handling
             break;
           case 2:
             pnum = atoi(optarg);
-            // your code here
-            // error handling
             break;
           case 3:
             with_files = true;
@@ -87,9 +81,23 @@ int main(int argc, char **argv) {
   int *array = malloc(sizeof(int) * array_size);
   GenerateArray(array, array_size, seed);
   int active_child_processes = 0;
+  int proc_array_len = (pnum < array_size ? (array_size/pnum): 1); // array len for one process
 
   struct timeval start_time;
   gettimeofday(&start_time, NULL);
+  
+  FILE *file;
+  int pipefd[2];
+  if (with_files)
+  {
+  	file = fopen("sync_file", "wb+");
+  }
+  else
+  if (pipe(pipefd) == -1)
+  {
+  	perror("pipe error");
+  	exit(EXIT_FAILURE);
+  }
 
   for (int i = 0; i < pnum; i++) {
     pid_t child_pid = fork();
@@ -99,12 +107,22 @@ int main(int argc, char **argv) {
       if (child_pid == 0) {
         // child process
 
-        // parallel somehow
+        unsigned int a_l = proc_array_len * (active_child_processes - 1);
+        unsigned int a_r = a_l + proc_array_len;
+        
+        a_l = a_l > array_size ? array_size : a_l;
+        a_r = a_r > array_size ? array_size : a_r;
+        
+        if (active_child_processes == pnum) a_r = array_size;
+        struct MinMax min_max = GetMinMax(array, a_l, a_r);
 
-        if (with_files) {
-          // use files here
-        } else {
-          // use pipe here
+        if (with_files) 
+        {
+          fwrite(&min_max, sizeof(struct MinMax), 1, file);
+        } 
+        else 
+        {
+          write(pipefd[1], &min_max, sizeof(struct MinMax));
         }
         return 0;
       }
@@ -115,10 +133,18 @@ int main(int argc, char **argv) {
     }
   }
 
+  int *k; //??????
   while (active_child_processes > 0) {
-    // your code here
-
+    
+    wait(k);
+	
     active_child_processes -= 1;
+  }
+  
+  if (with_files)
+  {
+  	fclose(file);
+  	file = fopen("sync_file", "rb");
   }
 
   struct MinMax min_max;
@@ -128,12 +154,18 @@ int main(int argc, char **argv) {
   for (int i = 0; i < pnum; i++) {
     int min = INT_MAX;
     int max = INT_MIN;
+    struct MinMax tmp;
 
-    if (with_files) {
-      // read from files
-    } else {
-      // read from pipes
+    if (with_files) 
+    {
+      fread(&tmp, sizeof(struct MinMax), 1, file);
+    } 
+    else 
+    {
+      read(pipefd[0], &tmp, sizeof(struct MinMax));
     }
+    min = tmp.min;
+    max = tmp.max;
 
     if (min < min_max.min) min_max.min = min;
     if (max > min_max.max) min_max.max = max;
