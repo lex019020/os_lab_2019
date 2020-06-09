@@ -19,6 +19,7 @@ int main(int argc, char **argv) {
   int seed = -1;
   int array_size = -1;
   int pnum = -1;
+  int timeout = 0;
   bool with_files = false;
 
   while (true) {
@@ -73,7 +74,7 @@ int main(int argc, char **argv) {
   }
 
   if (seed == -1 || array_size == -1 || pnum == -1) {
-    printf("Usage: %s --seed \"num\" --array_size \"num\" --pnum \"num\" \n",
+    printf("Usage: %s --seed \"num\" --array_size \"num\" --pnum \"num\" [--by_files]\n",
            argv[0]);
     return 1;
   }
@@ -107,6 +108,10 @@ int main(int argc, char **argv) {
       if (child_pid == 0) {
         // child process
 
+		//close reading end of pipe
+		if(!with_files)
+			close(pipefd[0]);
+
         unsigned int a_l = proc_array_len * (active_child_processes - 1);
         unsigned int a_r = a_l + proc_array_len;
         
@@ -123,9 +128,17 @@ int main(int argc, char **argv) {
         else 
         {
           write(pipefd[1], &min_max, sizeof(struct MinMax));
+		  //close(pipefd[1]);
         }
+
+		//close writing end of pipe at all child processes
+		if(!with_files)
+			close(pipefd[1]);
         return 0;
       }
+		//close writing end of pipe at parent processes
+		if(!with_files)
+			close(pipefd[1]);
 
     } else {
       printf("Fork failed!\n");
@@ -133,7 +146,7 @@ int main(int argc, char **argv) {
     }
   }
 
-  int *k; //??????
+  int *k;
   while (active_child_processes > 0) {
     
     wait(k);
@@ -169,6 +182,7 @@ int main(int argc, char **argv) {
 
     if (min < min_max.min) min_max.min = min;
     if (max > min_max.max) min_max.max = max;
+	//close(pipefd[1]);
   }
 
   struct timeval finish_time;

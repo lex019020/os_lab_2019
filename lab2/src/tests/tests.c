@@ -1,8 +1,4 @@
-#include <CUnit/Basic.h>
-#include <stdio.h>
-#include <string.h>
-
-#include "revert_string.h"
+#include "suite1.h"
 
 void testRevertString(void) {
   char simple_string[] = "Hello";
@@ -11,17 +7,19 @@ void testRevertString(void) {
   char str_with_even_chars_num[] = "abcd";
 
   RevertString(simple_string);
-  CU_ASSERT_STRING_EQUAL_FATAL(simple_string, "olleH");
+  CU_ASSERT_STRING_EQUAL_FATAL(simple_string, "eHllo");
 
   RevertString(str_with_spaces);
-  CU_ASSERT_STRING_EQUAL_FATAL(str_with_spaces, "secaps htiw gnirtS");
+  CU_ASSERT_STRING_EQUAL_FATAL(str_with_spaces, "iw gnirtSth spaces");
 
   RevertString(str_with_odd_chars_num);
-  CU_ASSERT_STRING_EQUAL_FATAL(str_with_odd_chars_num, "cba");
+  CU_ASSERT_STRING_EQUAL_FATAL(str_with_odd_chars_num, "abc");
 
   RevertString(str_with_even_chars_num);
-  CU_ASSERT_STRING_EQUAL_FATAL(str_with_even_chars_num, "dcba");
+  CU_ASSERT_STRING_EQUAL_FATAL(str_with_even_chars_num, "bacd");
 }
+
+
 
 int main() {
   CU_pSuite pSuite = NULL;
@@ -43,6 +41,22 @@ int main() {
     CU_cleanup_registry();
     return CU_get_error();
   }
+
+
+ CU_pSuite suite1 = NULL;
+
+ suite1 = CU_add_suite("Suite1", NULL, NULL);
+ if (NULL == suite1) {
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
+
+if ((NULL == CU_add_test(suite1, "test of numbers",
+                           test_numbers))) {
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
+
 
   /* Run all tests using the CUnit Basic interface */
   CU_basic_set_mode(CU_BRM_VERBOSE);

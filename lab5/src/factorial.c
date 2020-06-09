@@ -1,16 +1,16 @@
-#define LOCK(a) pthread_mutex_lock(&a)
-#define UNLOCK(a) pthread_mutex_unlock(&a)
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include <sys/time.h>
 #include <pthread.h>
+#include <semaphore.h>
 #include <getopt.h>
 
 volatile size_t global_result = 1;
 size_t global_mod = 1;
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+sem_t sem;
 
 struct fact_data
 {
@@ -27,9 +27,9 @@ void thread_fact(void *args)
         local_result = local_result * (i % global_mod) % global_mod;
     }
 
-    LOCK(mutex);
+    sem_wait(&sem);
     global_result = global_result * (local_result) % global_mod;
-    UNLOCK(mutex);
+    sem_post(&sem);
 };
 
 int main(int argc, char **argv)
@@ -94,6 +94,9 @@ int main(int argc, char **argv)
                argv[0]);
         return 1;
     }
+    ///////////////////////
+    sem_init(&sem, 0, 1);
+    ///////////////////////
 
     global_mod = f_mod;
     pthread_t threads[threads_num];
@@ -137,6 +140,9 @@ int main(int argc, char **argv)
 
     printf("Result: %lld\n", global_result);
     printf("Time: %f\n", elapsed_time);
+    ////////////////////
+    sem_destroy(&sem);
+    //////////////////////
 
     return 0;
 }

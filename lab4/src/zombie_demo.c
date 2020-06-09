@@ -9,12 +9,16 @@ int main ()
 
   child_pid = fork ();
   if (child_pid > 0) {
+    // if in parent process
     sleep (15);
   }
   else {
+    //if in fork
     printf("Becomes zombie\n");
     exit (0);
   }
 	printf("Main process end\n");
+  int status = 0;
+  wait(&status);
   return 0;
 }

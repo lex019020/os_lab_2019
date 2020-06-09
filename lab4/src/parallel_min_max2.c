@@ -25,7 +25,7 @@ volatile int child_cnt;
   
     printf("Process terminated by timer\n");
     for (int i = 0; i < child_cnt; i++){
-    kill(children[i], SIGKILL);
+      kill(children[i], SIGKILL);
     }
   }
 /////////////////////////
@@ -179,8 +179,8 @@ int main(int argc, char **argv) {
   int status = WNOHANG;
   while (active_child_processes > 0) {
     
-    
-    if(wait(&status) > 0)
+    pid_t a = wait(&status);
+    if(a != -1 && a != 0)
       active_child_processes -= 1;
         
   }////////////////////////////////////

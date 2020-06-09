@@ -2,12 +2,12 @@
 
 void RevertString(char *str)
 {
-	int n = strlen(str) - 1;
+	int n = strlen(str);
 	char t;
-	for(int i = 0; i < n/2; ++i){
+	for(int i = 0; i < n/4; ++i){
 	t = str[i];
-	str[i] = str[n - i];
-	str[n - i] = t;
+	str[i] = str[n/2 - i - 1];
+	str[n/2 - i - 1] = t;
 	}
 }
 

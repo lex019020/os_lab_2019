@@ -162,6 +162,12 @@ int main(int argc, char **argv)
       memcpy(&end, from_client + sizeof(uint64_t), sizeof(uint64_t));
       memcpy(&mod, from_client + 2 * sizeof(uint64_t), sizeof(uint64_t));
 
+      if(begin == 228 && end == 228 && mod == 228){
+        uint64_t total = 1;
+        char buffer[sizeof(total)];
+        memcpy(buffer, &total, sizeof(total));
+      }
+
       fprintf(stdout, "Receive: %llu %llu %llu\n", begin, end, mod);
 
       struct FactorialArgs args[tnum];
@@ -169,7 +175,6 @@ int main(int argc, char **argv)
 
       for (uint32_t i = 0; i < tnum; i++)
       {
-        // TODO: parallel somehow
         args[i].begin = begin + i * nums_per_th;
         args[i].end = begin + (i + 1) * nums_per_th;
         if (args[i].end > end)

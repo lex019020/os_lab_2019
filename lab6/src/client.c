@@ -86,7 +86,7 @@ void srv_connection(void *args)
   uint64_t answer = 0;
   memcpy(&answer, response, sizeof(uint64_t));
   close(sck);
-
+  printf("Got answer: %lld\n", answer);
   pthread_mutex_lock(&mutex);
   global_result = MultModulo(global_result, answer, global_mod);
   pthread_mutex_unlock(&mutex);
